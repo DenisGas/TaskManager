@@ -1,0 +1,23 @@
+﻿@using TaskManager.Data.Models
+@model IEnumerable<MyTask>
+
+@{
+    ViewData["Title"] = "All Tasks";
+}
+
+
+    <h1>Tasks List</h1>
+    <ul>
+        @foreach (var task in Model)
+        {
+            <li>
+                <strong>@task.Title</strong><br />
+                Description: @task.Description<br />
+                Created: @task.CreatedDate<br />
+                Due: @task.DueDate<br />
+                Priority: @task.Priority<br />
+                Completed: @task.IsCompleted
+            </li>
+        }
+    </ul>
+
