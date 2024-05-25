@@ -22,7 +22,9 @@ namespace TaskManager.Data.Models
 
         [Required]
         public string Title { get; set; }
-        public string Description { get; set; }
+
+        public string? Description { get; set; }
+
         public DateTime CreatedDate { get; set; }
         public DateTime UpdatedDate { get; set; }
 
@@ -32,11 +34,13 @@ namespace TaskManager.Data.Models
 
         public bool IsCompleted { get; set; }
 
-        public List<int> CategoryIds { get; set; }
+        public List<int>? CategoryIds { get; set; }
+
         public List<Category> Categories { get; set; }
 
         public PriorityLevel Priority { get; set; }
     }
+
 
     public enum PriorityLevel
     {

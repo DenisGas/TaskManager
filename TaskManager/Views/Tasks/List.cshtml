@@ -1,4 +1,5 @@
-﻿@model IEnumerable<TaskManager.Data.Models.MyTask>
+﻿@using TaskManager.ViewModels
+@model TaskViewModel
 
 @{
     ViewData["Title"] = "All Tasks";
@@ -7,7 +8,7 @@
 <form class="form-inline" method="get" asp-action="List">
     <div class="row w-100 mx-0 mb-2">
         <div class="col-10 px-0">
-            <input type="text" class="form-control w-100" id="searchString" name="searchString" placeholder="Search by Title" value="@ViewBag.CurrentFilter">
+            <input type="text" class="form-control w-100" id="searchString" name="searchString" placeholder="Search by Title" value="@Model.CurrentFilter">
 
 
         </div>
@@ -26,38 +27,37 @@
     <thead>
         <tr>
             <th>
-                @Html.DisplayNameFor(model => model.Id)
+                @Html.DisplayNameFor(model => model.AllTasks.First().Id)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Title)
+                @Html.DisplayNameFor(model => model.AllTasks.First().Title)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Description)
+                @Html.DisplayNameFor(model => model.AllTasks.First().Description)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.CreatedDate)
+                @Html.DisplayNameFor(model => model.AllTasks.First().CreatedDate)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.UpdatedDate)
+                @Html.DisplayNameFor(model => model.AllTasks.First().UpdatedDate)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.DueDate)
+                @Html.DisplayNameFor(model => model.AllTasks.First().DueDate)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.IsCompleted)
+                @Html.DisplayNameFor(model => model.AllTasks.First().IsCompleted)
             </th>
             <th>
-                Categories
+                Категорії
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Priority)
+                @Html.DisplayNameFor(model => model.AllTasks.First().Priority)
             </th>
-
             <th></th>
         </tr>
     </thead>
     <tbody>
-@foreach (var item in Model) {
+@foreach (var item in Model.AllTasks) {
         <tr>
             <td>
                 @Html.DisplayFor(modelItem => item.Id)
@@ -82,18 +82,27 @@
             </td>
 
                 <td>
-                    @foreach (var category in item.Categories)
+                    @if (item.Categories != null && item.Categories.Any())
                     {
-                        @category.CategoryName
+                        @for (int i = 0; i < item.Categories.Count; i++)
+                        {
+                            @item.Categories[i].CategoryName
+                            if (i < item.Categories.Count - 1)
+                            {
+                                @:<br />
+                            }
+                        }
                     }
                 </td>
+
+
             <td>
                 @Html.DisplayFor(modelItem => item.Priority)
             </td>
             <td>
-                @Html.ActionLink("Edit", "Edit", new { /* id=item.PrimaryKey */ }) |
-                @Html.ActionLink("Details", "Details", new { /* id=item.PrimaryKey */ }) |
-                @Html.ActionLink("Delete", "Delete", new { /* id=item.PrimaryKey */ })
+                    @Html.ActionLink("Edit", "Edit", new { item.Id }) |
+                    @Html.ActionLink("Details", "Details", new { item.Id }) |
+                @Html.ActionLink("Delete", "Delete", new { item.Id })
             </td>
         </tr>
 }

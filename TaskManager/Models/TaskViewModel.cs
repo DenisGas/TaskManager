@@ -7,9 +7,7 @@ namespace TaskManager.ViewModels
 {
     public class TaskViewModel
     {
-        public MyTask MyTask { get; set; }
-        public IEnumerable<Category> Categories { get; set; }
-        public IEnumerable<MyTask> Tasks { get; set; }
+        public IEnumerable<MyTask> AllTasks { get; set; } 
         public string CurrentFilter { get; set; }
     }
 }

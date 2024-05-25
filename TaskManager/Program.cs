@@ -1,5 +1,8 @@
 using TaskManager.Data.Interfaces;
 using TaskManager.Data.Mocks;
+using TaskManager.Data;
+using Microsoft.EntityFrameworkCore;
+using TaskManager.Data.Repos;
 
 namespace TaskManager
 {
@@ -7,13 +10,14 @@ namespace TaskManager
     {
         public static void Main(string[] args)
         {
-            var builder = WebApplication.CreateBuilder(args);
+        var builder = WebApplication.CreateBuilder(args);
 
-            // Add services to the container.
-            builder.Services.AddControllersWithViews();
+        // Add services to the container.
+        builder.Services.AddControllersWithViews();
 
-            builder.Services.AddScoped<IAllTasks, MockTasks>();
-            builder.Services.AddScoped<ITasksCategory, MockCategory>();
+            builder.Services.AddScoped<IAllTasks, TaskRepos>();
+            builder.Services.AddScoped<ITasksCategory, CategoryRepos>();
+            builder.Services.AddDbContext<AppDbContent>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
             var app = builder.Build();
 
@@ -26,6 +30,8 @@ namespace TaskManager
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();
+
+            DbObject.Initial(app);
 
             app.UseRouting();
 

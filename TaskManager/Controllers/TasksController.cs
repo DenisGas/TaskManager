@@ -12,13 +12,11 @@ namespace TaskManager.Controllers
     {
         private readonly IAllTasks _allTasks;
         private readonly ITasksCategory _allCategories;
-        private int _nextTaskId;
 
         public TasksController(IAllTasks allTasks, ITasksCategory allCategories)
         {
             _allTasks = allTasks;
             _allCategories = allCategories;
-            _nextTaskId = _allTasks.Tasks.Any() ? _allTasks.Tasks.Max(t => t.Id) + 1 : 1;
         }
 
         public IActionResult Index()
@@ -28,18 +26,20 @@ namespace TaskManager.Controllers
 
         public IActionResult List(string searchString)
         {
-            // Зберігаємо рядок запиту в ViewBag
-            ViewBag.CurrentFilter = searchString;
+            // Ініціалізація TaskViewModel
+            TaskViewModel obj = new TaskViewModel
+            {
+                AllTasks = _allTasks.Tasks, // Передбачаємо, що _allTasks.Tasks повертає IEnumerable<MyTask>
+                CurrentFilter = searchString // Встановлюємо поточний фільтр
+            };
 
-            var tasks = _allTasks.Tasks;
-
-           
+            // Якщо рядок пошуку не порожній, фільтруємо завдання
             if (!string.IsNullOrEmpty(searchString))
             {
-                tasks = tasks.Where(t => t.Title.Contains(searchString, StringComparison.OrdinalIgnoreCase));
+                obj.AllTasks = obj.AllTasks.Where(t => t.Title.Contains(searchString, StringComparison.OrdinalIgnoreCase));
             }
 
-            return View(tasks);
+            return View(obj);
         }
 
         public IActionResult Create()
@@ -54,24 +54,17 @@ namespace TaskManager.Controllers
             return View(myTask);
         }
 
-
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult Create(MyTask myTask)
         {
             if (ModelState.IsValid)
             {
-                // Увеличиваем значение _nextTaskId
-                _nextTaskId++;
-
-                // Присваиваем новый Id задаче
-                myTask.Id = _nextTaskId;
-
-                // Добавляем новую задачу к списку задач
-                _allTasks.Tasks = _allTasks.Tasks.Append(myTask).ToList();
+                // Вызываем метод AddTask для добавления новой задачи
+                _allTasks.AddTask(myTask);
 
                 // Перенаправляем на страницу с данными новой задачи
-                return RedirectToAction(nameof(Details), new { id = myTask.Id });
+                return RedirectToAction("List");
             }
 
             // Если модель недопустима, повторно передаем список категорий в представление вместе с объектом задачи

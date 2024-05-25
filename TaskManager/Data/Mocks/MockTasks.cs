@@ -79,9 +79,24 @@ namespace TaskManager.Data.Mocks
         public IEnumerable<MyTask> getCompletedTasks { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
         public IEnumerable<MyTask> getUnCompletedTasks { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
 
+        public void AddTask(MyTask newTask)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void DeleteTask(int id)
+        {
+            throw new NotImplementedException();
+        }
+
         public MyTask GetObjectTask(int id)
         {
             return Tasks.FirstOrDefault(task => task.Id == id);
+        }
+
+        public void UpdateTask(MyTask updatedTask)
+        {
+            throw new NotImplementedException();
         }
     }
 }

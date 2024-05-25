@@ -23,5 +23,10 @@ namespace TaskManager.Data.Mocks
             category.Id = _categories.Max(c => c.Id) + 1; // Генерация нового Id
             _categories.Add(category);
         }
+
+        public void DeleteCategory(int categoryId)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
