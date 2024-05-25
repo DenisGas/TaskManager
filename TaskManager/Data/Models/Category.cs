@@ -6,6 +6,6 @@
         public string CategoryName { get; set; }
         public string Description { get; set; }
 
-        public ICollection<MyTask> Tasks { get; set; } // Навігаційна властивість для завдань у цій категорії
+        public ICollection<MyTask> Tasks { get; set; } // Навигационная свойство для задач в этой категории
     }
 }

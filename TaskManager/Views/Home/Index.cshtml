@@ -25,51 +25,59 @@
         <h1 class="display-4">Ласкаво просимо</h1>
         <p>Час на сервері: @DateTime.Now</p>
     </div>
+</div>
 
-    @if (Model.TasksForToday.Any())
-    {
-        <h2>Завдання на сьогодні</h2>
-        <div class="row">
+<div class="row">
+    <div class="col-md-8">
+        <div class="table-responsive">
+            <h2>Останні 10 завдань</h2>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Назва</th>
+                        <th>Дата</th>
+                        <th>Пріоритет</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var task in Model.Last10Tasks)
+                    {
+                        <tr class="@GetPriorityColor(task.Priority)">
+                            <td style="color : @GetTextColor(task.Priority)">@task.Title</td>
+                            <td style="color : @GetTextColor(task.Priority)">@task.DueDate.ToShortDateString()</td>
+                            <td style="color : @GetTextColor(task.Priority)">@task.Priority</td>
+                            <td>
+                                <a href="@Url.Action("Details", "Tasks", new { id = task.Id })" class="btn btn-@GetButtonColor(task.Priority)">Детальніше</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="col-md-4">
+        @if (Model.TasksForToday.Any())
+        {
+            <h2>Завдання на сьогодні</h2>
             @foreach (var task in Model.TasksForToday)
             {
-                <div class="col-md-4 mb-3">
-                    <div class="card @GetPriorityColor(task.Priority)">
-                        <div class="card-body">
-                            <div class="d-flex align-items-center mb-2">
-                                <input class="form-check-input me-2" type="checkbox" id="completeCheckbox_@task.Id" @(task.IsCompleted ? "checked" : "")>
-                                <h5 class="card-title mb-0 me-2 text-truncate flex-grow-1">@task.Title</h5>
-                            </div>
-                            <p class="card-text mb-1 text-truncate">Дата: @task.DueDate.ToShortDateString()</p>
-                            <p class="card-text mb-1 text-truncate">Пріоритет: @task.Priority</p>
-                            <a href="@Url.Action("Details", "Tasks", new { id = task.Id })" class="btn btn-primary">Детальніше</a>
-                        </div>
-                    </div>
-                </div>
-            }
-        </div>
-    }
-    else
-    {
-        <p>Завдань на сьогодні немає.</p>
-    }
-
-    <h2>Останні 10 завдань</h2>
-    <div class="row">
-        @foreach (var task in Model.Last10Tasks)
-        {
-            <div class="col-md-4 mb-3">
-                <div class="card @GetPriorityColor(task.Priority)">
+                <div class="card @GetPriorityColor(task.Priority) mb-3">
                     <div class="card-body">
                         <div class="d-flex align-items-center mb-2">
                             <input class="form-check-input me-2" type="checkbox" id="completeCheckbox_@task.Id" @(task.IsCompleted ? "checked" : "")>
-                            <h5 class="card-title mb-0 me-2 text-truncate flex-grow-1">@task.Title</h5>
+                            <h5 class="card-title mb-0 me-2 text-truncate flex-grow-1 color : @GetTextColor(task.Priority)">@task.Title</h5>
                         </div>
-                        <p class="card-text mb-1 text-truncate">Дата: @task.DueDate.ToShortDateString()</p>
-                        <p class="card-text mb-1 text-truncate">Пріоритет: @task.Priority</p>
-                        <a href="@Url.Action("Details", "Tasks", new { id = task.Id })" class="btn btn-primary">Детальніше</a>
+                        <p class="card-text mb-1 text-truncate color : @GetTextColor(task.Priority)">Дата: @task.DueDate.ToShortDateString()</p>
+                        <p class="card-text mb-1 text-truncate color : @GetTextColor(task.Priority)">Пріоритет: @task.Priority</p>
+                        <a href="@Url.Action("Details", "Tasks", new { id = task.Id })" class="btn btn-@GetButtonColor(task.Priority) ">Детальніше</a>
                     </div>
                 </div>
-            </div>
+            }
+        }
+        else
+        {
+            <p>Завдань на сьогодні немає.</p>
         }
     </div>
 </div>
@@ -87,6 +95,36 @@
                 return "bg-info";
             default:
                 return "bg-light";
+        }
+    }
+
+    string GetButtonColor(PriorityLevel priority)
+    {
+        switch (priority)
+        {
+            case PriorityLevel.High:
+                return "outline-light";
+            case PriorityLevel.Medium:
+                return "outline-dark";
+            case PriorityLevel.Low:
+                return "outline-dark";
+            default:
+                return "outline-primary";
+        }
+    }
+
+    string GetTextColor(PriorityLevel priority)
+    {
+        switch (priority)
+        {
+            case PriorityLevel.High:
+                return "white";
+            case PriorityLevel.Medium:
+                return "black";
+            case PriorityLevel.Low:
+                return "black";
+            default:
+                return "black";
         }
     }
 }

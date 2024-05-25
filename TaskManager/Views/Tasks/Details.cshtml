@@ -1,0 +1,22 @@
+﻿@model TaskManager.Data.Models.MyTask
+
+<h4>Task Details</h4>
+<hr />
+<div>
+    <dl class="row">
+        <dt class="col-sm-3">Title:</dt>
+        <dd class="col-sm-9">@Model.Title</dd>
+
+        <dt class="col-sm-3">Description:</dt>
+        <dd class="col-sm-9">@Model.Description</dd>
+
+        <dt class="col-sm-3">Due Date:</dt>
+        <dd class="col-sm-9">@Model.DueDate</dd>
+
+        <dt class="col-sm-3">Category:</dt>
+        <dd class="col-sm-9">@Model.Categories.FirstOrDefault()?.CategoryName</dd>
+
+        <dt class="col-sm-3">Priority:</dt>
+        <dd class="col-sm-9">@Model.Priority</dd>
+    </dl>
+</div>

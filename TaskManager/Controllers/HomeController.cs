@@ -21,22 +21,24 @@ namespace TaskManager.Controllers
         }
         public IActionResult Index()
         {
-            // Получаем все задания
+            // Отримуємо всі завдання
             var allTasks = _allTasks.Tasks;
 
-            // Получаем задания на сегодня
-            var tasksForToday = allTasks.Where(task => task.DueDate.Date == DateTime.Today);
+            // Отримуємо завдання на сьогодні
+            var tasksForToday = allTasks.Where(task => task.DueDate.Date == DateTime.Today && !task.IsCompleted)
+                                        .OrderBy(task => task.Priority)
+                                        .ToList();
 
-            // Если заданий на сегодня нет, создаем пустой список
+            // Если задач на сегодня нет, создаем пустой список
             if (!tasksForToday.Any())
             {
                 tasksForToday = new List<MyTask>();
             }
 
-            // Получаем последние 10 заданий
-            var last10Tasks = allTasks.OrderByDescending(task => task.CreatedDate).Take(10);
+            // Отримуємо останні 10 завдань
+            var last10Tasks = allTasks.Where(task => !task.IsCompleted).OrderByDescending(task => task.CreatedDate).Take(10);
 
-            // Создаем модель представления, которая содержит как задания на сегодня, так и последние 10 заданий
+            // Створюємо модель подання, яка містить як завдання на сьогодні, так і останні 10 завдань
             var viewModel = new HomeViewModel
             {
                 TasksForToday = tasksForToday,

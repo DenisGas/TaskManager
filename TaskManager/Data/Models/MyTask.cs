@@ -1,19 +1,41 @@
-﻿namespace TaskManager.Data.Models
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+
+namespace TaskManager.Data.Models
 {
     public class MyTask
     {
+        public MyTask()
+        {
+            CreatedDate = DateTime.Now;
+            UpdatedDate = DateTime.Now;
+            Priority = PriorityLevel.Low;
+            Categories = new List<Category>();  // Збільшення DueDate на один день
+
+            // Збільшення DueDate на один день
+            DueDate = DateTime.Now.AddDays(1);
+            IsCompleted = false;
+        }
+
         public int Id { get; set; }
+
+        [Required]
         public string Title { get; set; }
         public string Description { get; set; }
         public DateTime CreatedDate { get; set; }
-        public DateTime UpdatedDate { get; set; } = DateTime.Now;
-        public DateTime DueDate { get; set; } // Час, коли завдання має бути завершено
-        public bool IsCompleted { get; set; } // Статус завдання: виконане чи ні
+        public DateTime UpdatedDate { get; set; }
 
-        public int CategoryId { get; set; } // Зовнішній ключ для категорії
-        public Category Category { get; set; } // Навігаційна властивість для категорії
+        [Required]
+        [DataType(DataType.Date)]
+        public DateTime DueDate { get; set; }
 
-        public PriorityLevel Priority { get; set; } // Пріоритет завдання
+        public bool IsCompleted { get; set; }
+
+        public List<int> CategoryIds { get; set; }
+        public List<Category> Categories { get; set; }
+
+        public PriorityLevel Priority { get; set; }
     }
 
     public enum PriorityLevel
