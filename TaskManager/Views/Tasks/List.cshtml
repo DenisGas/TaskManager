@@ -1,110 +1,195 @@
-﻿@using TaskManager.ViewModels
-@model TaskViewModel
+﻿    @using TaskManager.Data.Models
+    @using TaskManager.ViewModels
+    @model TaskViewModel
 
-@{
-    ViewData["Title"] = "All Tasks";
-}
+    @{
+        ViewData["Title"] = "Усі завдання";
+    }
 
-<form class="form-inline" method="get" asp-action="List">
-    <div class="row w-100 mx-0 mb-2">
-        <div class="col-10 px-0">
-            <input type="text" class="form-control w-100" id="searchString" name="searchString" placeholder="Search by Title" value="@Model.CurrentFilter">
+<div class="container-fluid">
+    <div class="row">
+        <!-- Сайдбар, стикизированный, но не фиксированный -->
+        <nav id="sidebar" class="col-md-3 col-lg-2 bg-light sidebar">
+                <form method="get" asp-action="List" class="p-3">
+                    <h5>Фільтри</h5>
+                    <div class="form-group">
+                        <input type="text" class="form-control" name="searchString" placeholder="Пошук за назвою" value="@Model.CurrentFilter">
+                    </div>
+                    <div class="form-group">
+                        <label>Категорії</label>
+                        <button type="button" class="btn btn-link btn-sm" onclick="toggleCategories()">Показати всі</button>
+                        <div id="categories" class="d-none">
+                            @foreach (var category in Model.AllCategories)
+                            {
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="categoryIds" value="@category.Id" @(Model.CategoryIds != null && Model.CategoryIds.Contains(category.Id) ? "checked" : "")>
+                                    <label class="form-check-label">
+                                        @category.CategoryName
+                                    </label>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Пріоритети</label>
+                        @foreach (PriorityLevel priority in Enum.GetValues(typeof(PriorityLevel)))
+                        {
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="priorityLevels" value="@priority" @(Model.PriorityLevels != null && Model.PriorityLevels.Contains(priority) ? "checked" : "")>
+                                <label class="form-check-label">
+                                    @priority
+                                </label>
+                            </div>
+                        }
+                    </div>
+                    <div class="form-group">
+                        <label>Початкова дата</label>
+                        <input type="date" class="form-control" name="startDate" value="@(Model.StartDate.HasValue ? Model.StartDate.Value.ToString("yyyy-MM-dd") : "")">
+                    </div>
+                    <div class="form-group">
+                        <label>Кінцева дата</label>
+                        <input type="date" class="form-control" name="endDate" value="@(Model.EndDate.HasValue ? Model.EndDate.Value.ToString("yyyy-MM-dd") : "")">
+                    </div>
+                    <div class="form-group">
+                        <label>Статус</label>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="isCompletedFilter" value="true" @(Model.IsCompletedFilter == true ? "checked" : "")>
+                        <label class="form-check-label">Виконані</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="isCompletedFilter" value="false" @(Model.IsCompletedFilter == false ? "checked" : "")>
+                        <label class="form-check-label">Не виконані</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="isCompletedFilter" value="" @(Model.IsCompletedFilter == null ? "checked" : "")>
+                        <label class="form-check-label">Усі</label>
+                    </div>
+
+                    </div>
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-primary btn-block">Фільтрувати</button>
+                    </div>
+                </form>
+            </nav>
+        <main role="main" class="col-md-9 ml-sm-auto col-lg-10 px-4">
+
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>@Html.DisplayNameFor(model => model.AllTasks.First().Id)</th>
+                            <th>@Html.DisplayNameFor(model => model.AllTasks.First().Title)</th>
+                            <th>@Html.DisplayNameFor(model => model.AllTasks.First().Description)</th>
+                            <th>@Html.DisplayNameFor(model => model.AllTasks.First().CreatedDate)</th>
+                            <th>@Html.DisplayNameFor(model => model.AllTasks.First().UpdatedDate)</th>
+                            <th>@Html.DisplayNameFor(model => model.AllTasks.First().DueDate)</th>
+                            <th>@Html.DisplayNameFor(model => model.AllTasks.First().IsCompleted)</th>
+                            <th>Категорії</th>
+                            <th>@Html.DisplayNameFor(model => model.AllTasks.First().Priority)</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.AllTasks)
+                        {
+                            <tr>
+                                <td>@Html.DisplayFor(modelItem => item.Id)</td>
+                                <td>@Html.DisplayFor(modelItem => item.Title)</td>
+                                <td>@Html.DisplayFor(modelItem => item.Description)</td>
+                                <td>@Html.DisplayFor(modelItem => item.CreatedDate)</td>
+                                <td>@Html.DisplayFor(modelItem => item.UpdatedDate)</td>
+                                <td>@Html.DisplayFor(modelItem => item.DueDate)</td>
+                                <td>
+                                <form method="post">
+                                    @Html.AntiForgeryToken()
+                                    <input type="checkbox" class="form-check-input" name="isCompleted" @(item.IsCompleted ? "checked" : "") onchange="updateTaskStatus(@item.Id, this.checked)">
+                                </form>
 
 
-        </div>
-        <div class="col-2 px-0">
-            <button type="submit" class="btn btn-primary w-100">Search</button>
+                                </td>
+
+
+                                <td>
+                                    @if (item.Categories != null && item.Categories.Any())
+                                    {
+                                        @for (int i = 0; i < item.Categories.Count; i++)
+                                        {
+                                            @item.Categories[i].CategoryName
+                                            if (i < item.Categories.Count - 1)
+                                            {
+                                                @:<br />
+                                            }
+                                        }
+                                    }
+                                </td>
+                                <td>@Html.DisplayFor(modelItem => item.Priority)</td>
+                                <td>
+                                    @Html.ActionLink("Редагувати", "Edit", new { item.Id }) |
+                                    @Html.ActionLink("Деталі", "Details", new { item.Id }) |
+                                    @Html.ActionLink("Видалити", "Delete", new { item.Id })
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </main>
         </div>
     </div>
-</form>
+
+    <script>
+
+            function toggleCategories() {
+                var categories = document.getElementById("categories");
+                if (categories.classList.contains("d-none")) {
+                    categories.classList.remove("d-none");
+                } else {
+                    categories.classList.add("d-none");
+                }
+            }
+
+    function updateTaskStatus(taskId, isCompleted) {
+        const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+
+        const data = {
+            id: taskId,
+            isCompleted: isCompleted,
+            __RequestVerificationToken: token
+        };
+
+        fetch(`/Tasks/UpdateStatus?id=${taskId}&isCompleted=${isCompleted}&returnUrl=${encodeURIComponent(window.location.href)}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        }).then(response => {
+            if (!response.ok) {
+                alert("Не вдалося оновити статус завдання.");
+            } else {
+                // Перенаправление на адрес в случае успешного выполнения запроса
+                window.location.href = response.url;
+            }
+        }).catch(error => {
+            console.error("Помилка:", error);
+            alert("Сталася помилка.");
+        });
+    }
 
 
-
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.AllTasks.First().Id)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.AllTasks.First().Title)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.AllTasks.First().Description)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.AllTasks.First().CreatedDate)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.AllTasks.First().UpdatedDate)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.AllTasks.First().DueDate)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.AllTasks.First().IsCompleted)
-            </th>
-            <th>
-                Категорії
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.AllTasks.First().Priority)
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-@foreach (var item in Model.AllTasks) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.Id)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Title)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Description)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.CreatedDate)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.UpdatedDate)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.DueDate)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.IsCompleted)
-            </td>
-
-                <td>
-                    @if (item.Categories != null && item.Categories.Any())
-                    {
-                        @for (int i = 0; i < item.Categories.Count; i++)
-                        {
-                            @item.Categories[i].CategoryName
-                            if (i < item.Categories.Count - 1)
-                            {
-                                @:<br />
-                            }
-                        }
-                    }
-                </td>
+   
+    </script>
 
 
-            <td>
-                @Html.DisplayFor(modelItem => item.Priority)
-            </td>
-            <td>
-                    @Html.ActionLink("Edit", "Edit", new { item.Id }) |
-                    @Html.ActionLink("Details", "Details", new { item.Id }) |
-                @Html.ActionLink("Delete", "Delete", new { item.Id })
-            </td>
-        </tr>
-}
-    </tbody>
-</table>
+    <style>
+        .form-check {
+            margin-bottom: 10px;
+        }
+
+    #sidebar {
+        position: sticky;
+        top: 0;
+        z-index: 1000; /* Чтобы находилась выше контента */
+        overflow-y: auto; /* Добавляем прокрутку, если панель не помещается */
+    }
+
+
+    </style>

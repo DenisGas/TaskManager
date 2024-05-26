@@ -11,11 +11,10 @@ namespace TaskManager.Data.Models
             CreatedDate = DateTime.Now;
             UpdatedDate = DateTime.Now;
             Priority = PriorityLevel.Low;
-            Categories = new List<Category>();  // Збільшення DueDate на один день
-
-            // Збільшення DueDate на один день
+            Categories = new List<Category>();
             DueDate = DateTime.Now.AddDays(1);
             IsCompleted = false;
+            CategoryIds = new List<int>();
         }
 
         public int Id { get; set; }
@@ -40,6 +39,7 @@ namespace TaskManager.Data.Models
 
         public PriorityLevel Priority { get; set; }
     }
+
 
 
     public enum PriorityLevel

@@ -16,25 +16,31 @@ namespace TaskManager.Data.Repos
         }
 
         public IEnumerable<MyTask> Tasks => appDbContent.Tasks.Include(t => t.Categories);
-        public IEnumerable<MyTask> getCompletedTasks => appDbContent.Tasks.Where(t => t.IsCompleted);
-        public IEnumerable<MyTask> getUnCompletedTasks => appDbContent.Tasks.Where(t => t.IsCompleted == false);
+        public IEnumerable<MyTask> getCompletedTasks => appDbContent.Tasks.Where(t => t.IsCompleted).Include(t => t.Categories);
+        public IEnumerable<MyTask> getUnCompletedTasks => appDbContent.Tasks.Where(t => !t.IsCompleted).Include(t => t.Categories);
 
         public MyTask GetObjectTask(int id)
         {
-            return appDbContent.Tasks.FirstOrDefault(t => t.Id == id);
+            return appDbContent.Tasks.Include(t => t.Categories).FirstOrDefault(t => t.Id == id);
         }
 
-        // Метод для добавления новой задачи
         public void AddTask(MyTask newTask)
         {
+            if (newTask.Categories != null && newTask.Categories.Count > 0)
+            {
+                foreach (var category in newTask.Categories)
+                {
+                    appDbContent.Categories.Attach(category);
+                }
+            }
+
             appDbContent.Tasks.Add(newTask);
             appDbContent.SaveChanges();
         }
 
-        // Метод для обновления существующей задачи
         public void UpdateTask(MyTask updatedTask)
         {
-            var task = appDbContent.Tasks.FirstOrDefault(t => t.Id == updatedTask.Id);
+            var task = appDbContent.Tasks.Include(t => t.Categories).FirstOrDefault(t => t.Id == updatedTask.Id);
             if (task != null)
             {
                 task.Title = updatedTask.Title;
@@ -51,10 +57,9 @@ namespace TaskManager.Data.Repos
             }
         }
 
-        // Метод для удаления задачи
         public void DeleteTask(int id)
         {
-            var task = appDbContent.Tasks.FirstOrDefault(t => t.Id == id);
+            var task = appDbContent.Tasks.Include(t => t.Categories).FirstOrDefault(t => t.Id == id);
             if (task != null)
             {
                 appDbContent.Tasks.Remove(task);
@@ -62,4 +67,6 @@ namespace TaskManager.Data.Repos
             }
         }
     }
+
+
 }

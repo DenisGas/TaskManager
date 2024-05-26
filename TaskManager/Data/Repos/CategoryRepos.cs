@@ -24,8 +24,11 @@ namespace TaskManager.Data.Repos
 
         public void AddCategory(Category category)
         {
-            appDbContent.Categories.Add(category);
-            appDbContent.SaveChanges();
+            if (!appDbContent.Categories.Any(c => c.CategoryName == category.CategoryName))
+            {
+                appDbContent.Categories.Add(category);
+                appDbContent.SaveChanges();
+            }
         }
 
         public void DeleteCategory(int categoryId)
