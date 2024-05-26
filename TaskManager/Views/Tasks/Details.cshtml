@@ -1,5 +1,9 @@
 ﻿@model TaskManager.Data.Models.MyTask
 
+@{
+    ViewData["Title"] = "Деталі завдання";
+}
+
 <h4>Деталі Завдання</h4>
 <hr />
 <div>
@@ -44,6 +48,7 @@
     </dl>
 </div>
 <div>
+    <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-danger">Видалити</a>
     <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">Редагувати</a>
     <a asp-action="Index" class="btn btn-secondary">Назад до Списку</a>
 </div>

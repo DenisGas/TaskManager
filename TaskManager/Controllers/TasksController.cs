@@ -1,18 +1,19 @@
-﻿    using Microsoft.AspNetCore.Mvc;
-    using TaskManager.Data.Interfaces;
-    using TaskManager.Data.Models;
-    using TaskManager.ViewModels;
-    using System;
-    using System.Linq;
-    using System.Threading.Tasks;
+﻿using Microsoft.AspNetCore.Mvc;
+using TaskManager.Data.Interfaces;
+using TaskManager.Data.Models;
+using TaskManager.ViewModels;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 using TaskManager.Data;
+using TaskManager.Models;
 
-    namespace TaskManager.Controllers
+namespace TaskManager.Controllers
+{
+    public class TasksController : Controller
     {
-        public class TasksController : Controller
-        {
-            private readonly IAllTasks _allTasks;
-            private readonly ITasksCategory _allCategories;
+        private readonly IAllTasks _allTasks;
+        private readonly ITasksCategory _allCategories;
 
         public TasksController(IAllTasks allTasks, ITasksCategory allCategories)
         {
@@ -21,15 +22,15 @@ using TaskManager.Data;
         }
 
         public IActionResult Index()
-            {
-                return RedirectToAction(nameof(List));
-            }
+        {
+            return RedirectToAction(nameof(List));
+        }
 
         public IActionResult List(string searchString, List<int> categoryIds, List<PriorityLevel> priorityLevels, DateTime? startDate, DateTime? endDate, bool? isCompletedFilter)
         {
             var tasks = _allTasks.Tasks;
 
-            // Применение фильтров
+            // Application of filters
             if (!string.IsNullOrEmpty(searchString))
             {
                 tasks = tasks.Where(t => t.Title.Contains(searchString, StringComparison.OrdinalIgnoreCase));
@@ -55,7 +56,7 @@ using TaskManager.Data;
                 tasks = tasks.Where(t => t.DueDate.Date <= endDate.Value.Date);
             }
 
-            // Применение фильтра по статусу
+            // Applying filter by status
             if (isCompletedFilter.HasValue)
             {
                 tasks = tasks.Where(t => t.IsCompleted == isCompletedFilter.Value);
@@ -77,23 +78,76 @@ using TaskManager.Data;
         }
 
 
+        public IActionResult Delete(int id)
+        {
+            var task = _allTasks.Tasks.FirstOrDefault(t => t.Id == id);
+            if (task == null)
+            {
+                return NotFound();
+            }
 
+            return View(task);
+        }
+
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public IActionResult DeleteConfirmed(int id)
+        {
+            var task = _allTasks.Tasks.FirstOrDefault(t => t.Id == id);
+            if (task == null)
+            {
+                return NotFound();
+            }
+
+            _allTasks.DeleteTask(id);
+
+            return RedirectToAction("List");
+        }
+
+
+
+        public IActionResult Edit(int id)
+        {
+            var task = _allTasks.Tasks.FirstOrDefault(t => t.Id == id);
+            if (task == null)
+            {
+                return NotFound();
+            }
+
+            var categories = _allCategories.AllCategories.ToList();
+
+            task.CategoryIds = task.Categories.Select(c => c.Id).ToList();
+
+            var viewModel = new TaskEditViewModel
+            {
+                Task = task,
+                Categories = categories
+            };
+
+            return View(viewModel);
+        }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Update(int id, MyTask updatedTask, string newCategoryName)
+        public IActionResult Edit(TaskEditViewModel viewModel, string? newCategoryName = null)
         {
-            // Виводимо дані для перевірки у консоль
-            Console.WriteLine("Updated Task Title: " + updatedTask.Title);
-            Console.WriteLine("Updated Task Description: " + updatedTask.Description);
-            Console.WriteLine("Updated Due Date: " + updatedTask.DueDate);
-            Console.WriteLine("Updated Priority: " + updatedTask.Priority);
-            Console.WriteLine("Updated Selected Categories: " + (updatedTask.CategoryIds != null ? string.Join(", ", updatedTask.CategoryIds) : "None"));
-            Console.WriteLine("New Category Name: " + newCategoryName);
+            var myTask = viewModel.Task;
 
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                // Додаємо нові категорії, якщо вони вказані
+                var errors = ModelState.Values.SelectMany(v => v.Errors);
+                foreach (var error in errors)
+                {
+                    Console.WriteLine(error.ErrorMessage);
+                }
+
+                var categories = _allCategories.AllCategories.ToList();
+                viewModel.Categories = categories;
+                return View(viewModel);
+            }
+
+            if (!string.IsNullOrEmpty(newCategoryName) || (myTask.CategoryIds != null && myTask.CategoryIds.Count > 0))
+            {
                 if (!string.IsNullOrEmpty(newCategoryName))
                 {
                     var newCategoryNames = newCategoryName.Split(',', StringSplitOptions.RemoveEmptyEntries);
@@ -102,40 +156,47 @@ using TaskManager.Data;
                         var trimmedName = name.Trim();
                         if (!string.IsNullOrEmpty(trimmedName))
                         {
-                            var newCategory = new Category { CategoryName = trimmedName, Description = string.Empty };
-                            _allCategories.AddCategory(newCategory);
-
-                            // Додаємо ID нової категорії до завдання
-                            if (updatedTask.CategoryIds == null)
+                            var existingCategory = _allCategories.AllCategories.FirstOrDefault(c => c.CategoryName.Equals(trimmedName, StringComparison.OrdinalIgnoreCase));
+                            if (existingCategory != null)
                             {
-                                updatedTask.CategoryIds = new List<int>();
+                                if (myTask.CategoryIds == null)
+                                {
+                                    myTask.CategoryIds = new List<int>();
+                                }
+                                myTask.CategoryIds.Add(existingCategory.Id);
                             }
-                            updatedTask.CategoryIds.Add(newCategory.Id);
+                            else
+                            {
+                                var newCategory = new Category { CategoryName = trimmedName, Description = string.Empty };
+                                _allCategories.AddCategory(newCategory);
+
+                                if (myTask.CategoryIds == null)
+                                {
+                                    myTask.CategoryIds = new List<int>();
+                                }
+                                myTask.CategoryIds.Add(newCategory.Id);
+                            }
                         }
                     }
                 }
 
-                // Отримуємо категорії за ID та встановлюємо їх для завдання
-                if (updatedTask.CategoryIds != null && updatedTask.CategoryIds.Count > 0)
+                if (myTask.CategoryIds != null && myTask.CategoryIds.Count > 0)
                 {
-                    updatedTask.Categories = _allCategories.AllCategories
-                        .Where(c => updatedTask.CategoryIds.Contains(c.Id))
+                    myTask.Categories = _allCategories.AllCategories
+                        .Where(c => myTask.CategoryIds.Contains(c.Id))
                         .ToList();
                 }
 
-                // Викликаємо метод UpdateTask для оновлення завдання
-                _allTasks.UpdateTask(updatedTask);
-
-                // Перенаправляємо на сторінку з деталями оновленого завдання
-                return RedirectToAction("Details", new { id = updatedTask.Id });
+                _allTasks.UpdateTask(myTask);
+                return RedirectToAction("Details", new { id = myTask.Id });
             }
 
-            // Якщо модель недійсна, передаємо список категорій у представлення разом із зміненим завданням
-            var categories = _allCategories.AllCategories.ToList();
-            updatedTask.Categories = categories;
+            myTask.Categories = new List<Category>();
+            _allTasks.UpdateTask(myTask);
 
-            return View(updatedTask);
+            return RedirectToAction("List");
         }
+
 
 
 
@@ -143,7 +204,7 @@ using TaskManager.Data;
         [HttpPost]
         public IActionResult UpdateStatus(int id, bool isCompleted, string returnUrl)
         {
-            // Найдем задачу по ID
+            // Find the task by ID
             var task = _allTasks.Tasks.FirstOrDefault(t => t.Id == id);
             if (task == null)
             {
@@ -151,13 +212,13 @@ using TaskManager.Data;
                 return NotFound();
             }
 
-            // Обновим статус задачи
+            // Update task status
             task.IsCompleted = isCompleted;
             _allTasks.UpdateTask(task);
 
             Console.WriteLine($"Завдання з ID {id} оновлено. Новий статус: {isCompleted}");
 
-            // Перенаправим на указанный адрес
+            // Redirect to the specified address
             if (!string.IsNullOrEmpty(returnUrl))
             {
                 // Ensure the returnUrl is a valid URL, then redirect
@@ -172,7 +233,7 @@ using TaskManager.Data;
                 }
             }
 
-            // Вернем успешный результат, если адрес не указан
+            // Return successful result if no address is specified
             return Ok();
         }
 
@@ -180,40 +241,41 @@ using TaskManager.Data;
 
 
         public IActionResult Create()
-            {
-                // Получаем список всех категорий
-                var categories = _allCategories.AllCategories.ToList();
+        {
+            // Get the list of all categories
+            var categories = _allCategories.AllCategories.ToList();
 
-                // Создаем новый объект задачи и инициализируем список категорий
-                var myTask = new MyTask { Categories = categories };
+            // Create a new task object and initialize the list of categories
+            var myTask = new MyTask { Categories = categories };
 
-                // Передаем объект задачи с категориями в представление
-                return View(myTask);
-            }
+            // Pass the task object with categories to the view
+            return View(myTask);
+        }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Create(MyTask myTask, string? newCategoryName = null) {
+        public IActionResult Create(MyTask myTask, string? newCategoryName = null)
+        {
 
 
             if (!ModelState.IsValid)
             {
-                // Определение ошибок в модели и их обработка
+                // Determination of errors in the model and their processing
                 var errors = ModelState.Values.SelectMany(v => v.Errors);
 
-                // Вывод ошибок в консоль для проверки (можно заменить на другие действия с обработкой ошибок)
+                // Output errors to the console for checking (can be replaced by other actions with error handling)
                 foreach (var error in errors)
                 {
                     Console.WriteLine(error.ErrorMessage);
                 }
 
-                // Возврат страницы снова вместе с ошибками валидации
+                // Return the page again along with validation errors
                 var categories = _allCategories.AllCategories.ToList();
                 myTask.Categories = categories;
                 return View(myTask);
             }
 
-            // Виводимо дані в консоль для перевірки
+            // Outputting data to the console for verification
             Console.WriteLine("Task Title: " + myTask.Title);
             Console.WriteLine("Task Description: " + myTask.Description);
             Console.WriteLine("Due Date: " + myTask.DueDate);
@@ -222,7 +284,7 @@ using TaskManager.Data;
             Console.WriteLine("New Category Name: " + !string.IsNullOrEmpty(newCategoryName));
 
 
-            // Якщо вибрано або введено хоча б одну категорію, то додати їх до моделі
+            // If at least one category is selected or entered, add them to the model
             if (!string.IsNullOrEmpty(newCategoryName) || (myTask.CategoryIds != null && myTask.CategoryIds.Count > 0))
             {
                 if (!string.IsNullOrEmpty(newCategoryName))
@@ -233,11 +295,11 @@ using TaskManager.Data;
                         var trimmedName = name.Trim();
                         if (!string.IsNullOrEmpty(trimmedName))
                         {
-                            // Перевірка, чи категорія вже існує в базі даних
+                            // Check if the category already exists in the database
                             var existingCategory = _allCategories.AllCategories.FirstOrDefault(c => c.CategoryName.Equals(trimmedName, StringComparison.OrdinalIgnoreCase));
                             if (existingCategory != null)
                             {
-                                // Додаємо ID існуючої категорії до завдання
+                                // Add the ID of the existing category to the task
                                 if (myTask.CategoryIds == null)
                                 {
                                     myTask.CategoryIds = new List<int>();
@@ -246,7 +308,7 @@ using TaskManager.Data;
                             }
                             else
                             {
-                                // Якщо категорія нова, то створюємо її та додаємо ID до завдання
+                                // If the category is new, then create it and add the ID to the task
                                 var newCategory = new Category { CategoryName = trimmedName, Description = string.Empty };
                                 _allCategories.AddCategory(newCategory);
 
@@ -260,7 +322,7 @@ using TaskManager.Data;
                     }
                 }
 
-                // Отримуємо категорії за ID та встановлюємо їх для завдання
+                // If the category is new, then create it and add the ID to the task
                 if (myTask.CategoryIds != null && myTask.CategoryIds.Count > 0)
                 {
                     myTask.Categories = _allCategories.AllCategories
@@ -268,21 +330,21 @@ using TaskManager.Data;
                         .ToList();
                 }
 
-                // Викликаємо метод AddTask для додавання нового завдання
+                // If the category is new, then create it and add the ID to the task
                 _allTasks.AddTask(myTask);
 
-                // Перенаправляємо на сторінку з деталями нового завдання
+                // Redirect to the page with the details of the new task
                 return RedirectToAction("List");
             }
 
-            // Якщо категорії не вибрані і не введені, додаємо пустий список категорій до завдання
+            // If no categories are selected and entered, add an empty list of categories to the task
             myTask.Categories = new List<Category>();
 
-            // Викликаємо метод AddTask для додавання нового завдання
+            // Call the AddTask method to add a new task
             _allTasks.AddTask(myTask);
 
 
-            // Перенаправляємо на сторінку з деталями нового завдання
+            // Redirect to the page with the details of the new task
             return RedirectToAction("List");
         }
 
@@ -292,17 +354,17 @@ using TaskManager.Data;
 
 
         public IActionResult Details(int id)
+        {
+            var task = _allTasks.Tasks.FirstOrDefault(t => t.Id == id);
+            if (task == null)
             {
-                var task = _allTasks.Tasks.FirstOrDefault(t => t.Id == id);
-                if (task == null)
-                {
-                    return NotFound();
-                }
-
-                return View(task);
+                return NotFound();
             }
 
-
-
+            return View(task);
         }
+
+
+
     }
+}

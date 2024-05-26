@@ -8,7 +8,7 @@
 
 <div class="container-fluid">
     <div class="row">
-        <!-- Сайдбар, стикизированный, но не фиксированный -->
+      
         <nav id="sidebar" class="col-md-3 col-lg-2 bg-light sidebar">
                 <form method="get" asp-action="List" class="p-3">
                     <h5>Фільтри</h5>
@@ -72,7 +72,7 @@
                 </form>
             </nav>
         <main role="main" class="col-md-9 ml-sm-auto col-lg-10 px-4">
-
+           
                 <table class="table">
                     <thead>
                         <tr>
@@ -88,7 +88,11 @@
                             <th></th>
                         </tr>
                     </thead>
+
+        
                     <tbody>
+                    @if (Model.AllTasks.Any())
+                    {
                         @foreach (var item in Model.AllTasks)
                         {
                             <tr>
@@ -129,8 +133,20 @@
                                 </td>
                             </tr>
                         }
-                    </tbody>
+                    }
+                    else
+                    {
+                    <tr>
+                        <td colspan="10" class="text-center mt-5">
+                            <p>Наразі немає жодних завдань або тих що відповідають фільтру.</p>
+                                <a asp-controller="Tasks" asp-action="Create" class="btn btn-success">Створити нове завдання</a>
+                        </td>
+                    </tr>
+                    }
+
+
                 </table>
+
             </main>
         </div>
     </div>
@@ -165,8 +181,7 @@
             if (!response.ok) {
                 alert("Не вдалося оновити статус завдання.");
             } else {
-                // Перенаправление на адрес в случае успешного выполнения запроса
-                window.location.href = response.url;
+                                window.location.href = response.url;
             }
         }).catch(error => {
             console.error("Помилка:", error);
@@ -187,8 +202,8 @@
     #sidebar {
         position: sticky;
         top: 0;
-        z-index: 1000; /* Чтобы находилась выше контента */
-        overflow-y: auto; /* Добавляем прокрутку, если панель не помещается */
+        z-index: 1000; 
+        overflow-y: auto; 
     }
 
 

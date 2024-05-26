@@ -29,7 +29,7 @@ namespace TaskManager.Data
                     appDbContent.SaveChanges();
                 }
 
-                if (!appDbContent.Tasks.Any())
+               /* if (!appDbContent.Tasks.Any())
                 {
                     // Create and add tasks to the database if they do not exist
                     var initialTasks = new List<MyTask>
@@ -48,7 +48,7 @@ namespace TaskManager.Data
                     {
                         Tasks.Add(task.Title, task);
                     }
-                }
+                }*/
             }
         }
 

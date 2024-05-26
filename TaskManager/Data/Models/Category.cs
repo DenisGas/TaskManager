@@ -4,8 +4,8 @@
     {
         public int Id { get; set; }
         public string CategoryName { get; set; }
-        public string? Description { get; set; } // Изменено, чтобы допускать null
+        public string? Description { get; set; } 
 
-        public ICollection<MyTask> Tasks { get; set; } // Навигационное свойство для задач в этой категории
+        public ICollection<MyTask> Tasks { get; set; }
     }
 }

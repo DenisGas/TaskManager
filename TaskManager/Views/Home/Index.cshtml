@@ -14,7 +14,7 @@
 
     .line-clamp {
         display: -webkit-box;
-        -webkit-line-clamp: 2; /* Количество отображаемых строк */
+        -webkit-line-clamp: 2; 
         -webkit-box-orient: vertical;
         overflow: hidden;
     }
@@ -27,6 +27,8 @@
     </div>
 </div>
 
+@if (Model.Last10Tasks.Any() || Model.TasksForToday.Any())
+{
 <div class="row">
     <div class="col-md-8">
         <div class="table-responsive">
@@ -37,7 +39,8 @@
                         <th>Назва</th>
                         <th>Дата</th>
                         <th>Пріоритет</th>
-                        <th></th>
+                        <th>Статус</th>
+                            <th></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -47,9 +50,17 @@
                             <td style="color : @GetTextColor(task.Priority)">@task.Title</td>
                             <td style="color : @GetTextColor(task.Priority)">@task.DueDate.ToShortDateString()</td>
                             <td style="color : @GetTextColor(task.Priority)">@task.Priority</td>
+                                <td>
+                                    <form method="post">
+                                        @Html.AntiForgeryToken()
+                                        <input type="checkbox" class="form-check-input" name="isCompleted" @(task.IsCompleted ? "checked" : "") onchange="updateTaskStatus(@task.Id, this.checked)">
+                                    </form>
+                                </td>
+
                             <td>
                                 <a href="@Url.Action("Details", "Tasks", new { id = task.Id })" class="btn btn-@GetButtonColor(task.Priority)">Детальніше</a>
                             </td>
+
                         </tr>
                     }
                 </tbody>
@@ -64,13 +75,13 @@
             {
                 <div class="card @GetPriorityColor(task.Priority) mb-3">
                     <div class="card-body">
-                        <div class="d-flex align-items-center mb-2">
-                            <form method="post">
-                                @Html.AntiForgeryToken()
-                                <input type="checkbox" class="form-check-input" name="isCompleted" @(task.IsCompleted ? "checked" : "") onchange="updateTaskStatus(@task.Id, this.checked)">
-                            </form>
-                            <h5 class="card-title mb-0 me-2 text-truncate flex-grow-1 color : @GetTextColor(task.Priority)">@task.Title</h5>
-                        </div>
+                            <div class="d-flex align-items-center mb-2">
+                                <form method="post">
+                                    @Html.AntiForgeryToken()
+                                    <input type="checkbox" class="form-check-input" name="isCompleted" @(task.IsCompleted ? "checked" : "") onchange="updateTaskStatus(@task.Id, this.checked)">
+                                </form>
+                                <h5 class="card-title mb-0 me-2 text-truncate flex-grow-1 color : @GetTextColor(task.Priority)" style="margin-left: 10px;">@task.Title</h5>
+                            </div>
                         <p class="card-text mb-1 text-truncate color : @GetTextColor(task.Priority)">Дата: @task.DueDate.ToShortDateString()</p>
                         <p class="card-text mb-1 text-truncate color : @GetTextColor(task.Priority)">Пріоритет: @task.Priority</p>
                         <a href="@Url.Action("Details", "Tasks", new { id = task.Id })" class="btn btn-@GetButtonColor(task.Priority) ">Детальніше</a>
@@ -84,6 +95,14 @@
         }
     </div>
 </div>
+}
+else
+{
+    <div class="text-center mt-5">
+        <p>Наразі немає жодних активних завдань.</p>
+        <a asp-controller="Tasks" asp-action="Create" class="btn btn-success">Створити нове завдання</a>
+    </div>
+}
 
 @functions {
     string GetPriorityColor(PriorityLevel priority)
@@ -152,8 +171,7 @@
             if (!response.ok) {
                 alert("Не вдалося оновити статус завдання.");
             } else {
-                // Перенаправление на адрес в случае успешного выполнения запроса
-                window.location.href = response.url;
+                                window.location.href = response.url;
             }
         }).catch(error => {
             console.error("Помилка:", error);

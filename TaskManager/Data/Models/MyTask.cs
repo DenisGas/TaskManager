@@ -8,7 +8,10 @@ namespace TaskManager.Data.Models
     {
         public MyTask()
         {
-            CreatedDate = DateTime.Now;
+            if (CreatedDate == default(DateTime))
+            {
+                CreatedDate = DateTime.Now;
+            }
             UpdatedDate = DateTime.Now;
             Priority = PriorityLevel.Low;
             Categories = new List<Category>();

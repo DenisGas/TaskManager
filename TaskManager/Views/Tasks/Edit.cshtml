@@ -1,0 +1,71 @@
+﻿@model TaskManager.ViewModels.TaskEditViewModel
+
+@{
+    ViewData["Title"] = "Редагування завдання";
+}
+
+<h4>Edit Task</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Edit" method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="Task.Id" />
+            <div class="form-group">
+                <label asp-for="Task.Title" class="control-label"></label>
+                <input asp-for="Task.Title" class="form-control" />
+                <span asp-validation-for="Task.Title" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Task.Description" class="control-label"></label>
+                <textarea asp-for="Task.Description" class="form-control" rows="6"></textarea>
+                <span asp-validation-for="Task.Description" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Task.DueDate" class="control-label"></label>
+                <input asp-for="Task.DueDate" class="form-control" />
+                <span asp-validation-for="Task.DueDate" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Task.Categories" class="control-label"></label>
+                <select asp-for="Task.CategoryIds" class="form-control" multiple="multiple" asp-items="@(new SelectList(Model.Categories , "Id", "CategoryName", Model.Task.CategoryIds))">
+                    <option value="">-- Select Category --</option>
+                </select>
+                <span asp-validation-for="Task.CategoryIds" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label class="control-label">New Category</label>
+                <input type="text" name="newCategoryName" class="form-control" />
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Task.Priority" class="control-label"></label>
+                <select asp-for="Task.Priority" class="form-control">
+                    <option value="Low">Low</option>
+                    <option value="Medium">Medium</option>
+                    <option value="High">High</option>
+                </select>
+                <span asp-validation-for="Task.Priority" class="text-danger"></span>
+            </div>
+
+            <div class="form-group form-check">
+                <input asp-for="Task.IsCompleted" class="form-check-input" type="checkbox" />
+                <label asp-for="Task.IsCompleted" class="form-check-label"></label>
+                <span asp-validation-for="Task.IsCompleted" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <input type="submit" value="Save" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<br />
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>

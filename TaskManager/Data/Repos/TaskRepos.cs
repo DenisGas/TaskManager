@@ -40,22 +40,35 @@ namespace TaskManager.Data.Repos
 
         public void UpdateTask(MyTask updatedTask)
         {
-            var task = appDbContent.Tasks.Include(t => t.Categories).FirstOrDefault(t => t.Id == updatedTask.Id);
+            var task = appDbContent.Tasks
+                .Include(t => t.Categories)
+                .FirstOrDefault(t => t.Id == updatedTask.Id);
+
             if (task != null)
             {
                 task.Title = updatedTask.Title;
                 task.Description = updatedTask.Description;
-                task.CreatedDate = updatedTask.CreatedDate;
-                task.UpdatedDate = updatedTask.UpdatedDate;
+                task.UpdatedDate = DateTime.Now; // Оновлюємо дату оновлення
                 task.DueDate = updatedTask.DueDate;
                 task.IsCompleted = updatedTask.IsCompleted;
                 task.Priority = updatedTask.Priority;
-                task.Categories = updatedTask.Categories;
+
+                // Опціонально: оновлюємо категорії, якщо вони змінилися
+                if (!Enumerable.SequenceEqual(task.Categories, updatedTask.Categories))
+                {
+                    task.Categories.Clear(); // Очищаємо наявні категорії
+                    foreach (var category in updatedTask.Categories)
+                    {
+                        appDbContent.Categories.Attach(category);
+                        task.Categories.Add(category); // Додаємо нові категорії
+                    }
+                }
 
                 appDbContent.Tasks.Update(task);
                 appDbContent.SaveChanges();
             }
         }
+
 
         public void DeleteTask(int id)
         {

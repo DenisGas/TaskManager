@@ -12,7 +12,7 @@ using TaskManager.Data;
 namespace TaskManager.Migrations
 {
     [DbContext(typeof(AppDbContent))]
-    [Migration("20240525152733_init")]
+    [Migration("20240526223945_init")]
     partial class init
     {
         /// <inheritdoc />
@@ -37,7 +37,7 @@ namespace TaskManager.Migrations
 
                     b.HasIndex("TasksId");
 
-                    b.ToTable("CategoryMyTask");
+                    b.ToTable("TaskCategories", (string)null);
                 });
 
             modelBuilder.Entity("TaskManager.Data.Models.Category", b =>
@@ -53,7 +53,6 @@ namespace TaskManager.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Description")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
@@ -70,14 +69,12 @@ namespace TaskManager.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("CategoryIds")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Description")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("DueDate")

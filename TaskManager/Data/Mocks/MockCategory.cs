@@ -20,7 +20,7 @@ namespace TaskManager.Data.Mocks
 
         public void AddCategory(Category category)
         {
-            category.Id = _categories.Max(c => c.Id) + 1; // Генерация нового Id
+            category.Id = _categories.Max(c => c.Id) + 1; // Generating a new Id
             _categories.Add(category);
         }
 

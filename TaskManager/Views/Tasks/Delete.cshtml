@@ -1,0 +1,57 @@
+﻿@model TaskManager.Data.Models.MyTask
+
+@{
+    ViewData["Title"] = "Видалення завдання";
+}
+
+<div>
+    <h4>Деталі Завдання</h4>
+    <hr />
+    <div>
+        <dl class="row">
+            <dt class="col-sm-3">Назва:</dt>
+            <dd class="col-sm-9">@Model.Title</dd>
+
+            <dt class="col-sm-3">Опис:</dt>
+            <dd class="col-sm-9">@Model.Description</dd>
+
+            <dt class="col-sm-3">Дата Завершення:</dt>
+            <dd class="col-sm-9">@Model.DueDate.ToString("dd/MM/yyyy")</dd>
+
+            <dt class="col-sm-3">Категорії:</dt>
+            <dd class="col-sm-9">
+                @if (Model.Categories != null && Model.Categories.Any())
+                {
+                    <ul>
+                        @foreach (var category in Model.Categories)
+                        {
+                            <li>@category.CategoryName</li>
+                        }
+                    </ul>
+                }
+                else
+                {
+                    <span>Категорії не призначено</span>
+                }
+            </dd>
+
+            <dt class="col-sm-3">Пріоритет:</dt>
+            <dd class="col-sm-9">@Model.Priority</dd>
+
+            <dt class="col-sm-3">Дата Створення:</dt>
+            <dd class="col-sm-9">@Model.CreatedDate.ToString("dd/MM/yyyy HH:mm:ss")</dd>
+
+            <dt class="col-sm-3">Дата Оновлення:</dt>
+            <dd class="col-sm-9">@Model.UpdatedDate.ToString("dd/MM/yyyy HH:mm:ss")</dd>
+
+            <dt class="col-sm-3">Завершено:</dt>
+            <dd class="col-sm-9">@(Model.IsCompleted ? "Так" : "Ні")</dd>
+        </dl>
+    </div>
+    <h3>Ви впевнені, що хочете це видалити?</h3>
+    <form asp-action="Delete">
+        <input type="hidden" asp-for="Id" />
+        <input type="submit" value="Так Видалити" class="btn btn-danger" /> |
+        <a asp-action="Index" class="btn btn-secondary">Назад до Списку</a>
+    </form>
+</div>

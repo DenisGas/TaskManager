@@ -6,8 +6,8 @@ namespace TaskManager.Data.Interfaces
     public interface ITasksCategory
     {
         IEnumerable<Category> AllCategories { get; }
-        Category GetCategoryById(int categoryId); // Метод для получения категории по Id
-        void AddCategory(Category category); // Метод для добавления новой категории
-        void DeleteCategory(int categoryId); // Метод для удаления категории по Id
+        Category GetCategoryById(int categoryId); 
+        void AddCategory(Category category); 
+        void DeleteCategory(int categoryId); 
     }
 }

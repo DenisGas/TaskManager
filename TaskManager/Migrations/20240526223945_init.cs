@@ -18,7 +18,7 @@ namespace TaskManager.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     CategoryName = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Description = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -32,12 +32,12 @@ namespace TaskManager.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Title = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     DueDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     IsCompleted = table.Column<bool>(type: "bit", nullable: false),
-                    CategoryIds = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CategoryIds = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Priority = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
@@ -46,7 +46,7 @@ namespace TaskManager.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "CategoryMyTask",
+                name: "TaskCategories",
                 columns: table => new
                 {
                     CategoriesId = table.Column<int>(type: "int", nullable: false),
@@ -54,15 +54,15 @@ namespace TaskManager.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_CategoryMyTask", x => new { x.CategoriesId, x.TasksId });
+                    table.PrimaryKey("PK_TaskCategories", x => new { x.CategoriesId, x.TasksId });
                     table.ForeignKey(
-                        name: "FK_CategoryMyTask_Categories_CategoriesId",
+                        name: "FK_TaskCategories_Categories_CategoriesId",
                         column: x => x.CategoriesId,
                         principalTable: "Categories",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_CategoryMyTask_Tasks_TasksId",
+                        name: "FK_TaskCategories_Tasks_TasksId",
                         column: x => x.TasksId,
                         principalTable: "Tasks",
                         principalColumn: "Id",
@@ -70,8 +70,8 @@ namespace TaskManager.Migrations
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_CategoryMyTask_TasksId",
-                table: "CategoryMyTask",
+                name: "IX_TaskCategories_TasksId",
+                table: "TaskCategories",
                 column: "TasksId");
         }
 
@@ -79,7 +79,7 @@ namespace TaskManager.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "CategoryMyTask");
+                name: "TaskCategories");
 
             migrationBuilder.DropTable(
                 name: "Categories");
