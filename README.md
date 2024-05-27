@@ -1,8 +1,7 @@
 # TaskManager
 
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-[![GitHub stars](https://img.shields.io/github/stars/DenisGas/TaskManager.svg)](https://github.com/DenisGas/TaskManager/stargazers)
-[![GitHub forks](https://img.shields.io/github/forks/DenisGas/TaskManager.svg)](https://github.com/DenisGas/TaskManager/network)
+![GitHub Repo stars](https://img.shields.io/github/stars/DenisGas/TaskManager)
 [![GitHub issues](https://img.shields.io/github/issues/DenisGas/TaskManager.svg)](https://github.com/DenisGas/TaskManager/issues)
 
 ![Preview image](https://github.com/DenisGas/TaskManager/assets/81939899/60252d5a-de11-4cef-80dc-dc7537fb1b51)
